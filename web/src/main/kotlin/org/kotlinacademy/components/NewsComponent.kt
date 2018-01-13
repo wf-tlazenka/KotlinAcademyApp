@@ -21,11 +21,13 @@ class NewsComponent : BaseComponent<RProps, NewsComponentState>(), NewsView {
         setState { state.loading = n }
     }
 
-    override fun RBuilder.render(): ReactElement? = when {
-        state.loading != false -> loadingView()
-        state.error != null -> errorView(state.error!!)
-        state.newsList != null -> newsListView()
-        else -> div { }
+    override fun RBuilder.render() {
+        when {
+            state.loading != false -> loadingView()
+            state.error != null -> errorView(state.error!!)
+            state.newsList != null -> newsListView()
+            else -> div { }
+        }
     }
 
     private fun RBuilder.newsListView(): ReactElement? = div(classes = "main") {

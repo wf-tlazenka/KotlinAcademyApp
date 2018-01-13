@@ -7,9 +7,9 @@ ext {
     junit_version = '4.12'
 
     // JS
-    kotlinx_html_version = 'bootstrap-1.1.50-dev-1182-69'
-    react_version = '0.0.3-kotlin-1.1.50-eap-18'
-    react_dom_version = '0.0.5-kotlin-1.1.50-eap-18'
+    kotlinx_html_version = '0.6.8'
+    react_version = '16.2.0-pre.17-kotlin-1.2.0'
+    react_dom_version = '16.2.0-pre.17-kotlin-1.2.0'
 
     // Backend
     squash_version = '0.2.3'

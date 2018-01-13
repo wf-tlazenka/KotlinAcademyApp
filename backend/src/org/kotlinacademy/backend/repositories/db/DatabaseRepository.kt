@@ -1,10 +1,7 @@
 package org.kotlinacademy.backend.repositories.db
 
 import org.kotlinacademy.common.Provider
-import org.kotlinacademy.data.Feedback
-import org.kotlinacademy.data.FirebaseTokenData
-import org.kotlinacademy.data.FirebaseTokenType
-import org.kotlinacademy.data.News
+import org.kotlinacademy.data.*
 
 interface DatabaseRepository {
 
@@ -16,6 +13,9 @@ interface DatabaseRepository {
     suspend fun addFeedback(feedback: Feedback)
     suspend fun getAllTokens(): List<FirebaseTokenData>
     suspend fun addToken(token: String, tokenType: FirebaseTokenType)
+    suspend fun getEmailSubscriptions(): List<Subscription>
+    suspend fun addEmailSubscription(email: String): Subscription
+    suspend fun removeEmailSubscription(key: String)
 
     companion object: Provider<DatabaseRepository>() {
         override fun create(): DatabaseRepository = Database

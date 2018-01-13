@@ -23,11 +23,13 @@ class FeedbackComponent : BaseComponent<RouteResultProps<CommentProps>, CommentC
         setState { state.loading = n }
     }
 
-    override fun RBuilder.render(): ReactElement? = when {
-        state.loading == true -> loadingView()
-        state.showThankYouPage == true -> thankYouView()
-        state.error != null -> errorView(state.error!!)
-        else -> commentFormView(id = props.match.params.id?.toIntOrNull(), onSubmit = presenter::onSendCommentClicked)
+    override fun RBuilder.render() {
+        when {
+            state.loading == true -> loadingView()
+            state.showThankYouPage == true -> thankYouView()
+            state.error != null -> errorView(state.error!!)
+            else -> commentFormView(id = props.match.params.id?.toIntOrNull(), onSubmit = presenter::onSendCommentClicked)
+        }
     }
 
     override fun backToNewsAndShowSuccess() {
@@ -36,10 +38,6 @@ class FeedbackComponent : BaseComponent<RouteResultProps<CommentProps>, CommentC
             delay(3_000)
             window.location.replace("/")
         }
-    }
-
-    override fun componentDidMount() {
-
     }
 }
 

@@ -35,3 +35,18 @@ suspend fun sendEmailWithNotificationResult(result: NotificationResult, emailRep
             """.trimMargin()
     )
 }
+
+suspend fun sendMailing(title: String, message: String, emailRepository: EmailRepository, databaseRepository: DatabaseRepository) {
+    val emailSubscriptions = databaseRepository.getEmailSubscriptions()
+    emailSubscriptions.forEach { (email) ->
+        emailRepository.sendEmail(email, title, message)
+    }
+}
+
+suspend fun sendSubscriptionAddedEmail(to: String, emailRepository: EmailRepository) {
+    sendSubscriptionEmail(to, "Thank you", "Thank you for subscribing Kotlin Academy newsletter :)", emailRepository)
+}
+
+suspend fun sendSubscriptionEmail(to: String, title: String, content: String, emailRepository: EmailRepository) {
+    emailRepository.sendEmail(to, title, content + "\n ")
+}

@@ -14,21 +14,21 @@ import org.jetbrains.squash.query.orderBy
 import org.jetbrains.squash.query.select
 import org.jetbrains.squash.query.where
 import org.jetbrains.squash.results.get
-import org.jetbrains.squash.statements.insertInto
-import org.jetbrains.squash.statements.set
-import org.jetbrains.squash.statements.update
-import org.jetbrains.squash.statements.values
+import org.jetbrains.squash.statements.*
+import org.kotlinacademy.DateTime
 import org.kotlinacademy.backend.application
-import org.kotlinacademy.data.Feedback
-import org.kotlinacademy.data.FirebaseTokenData
-import org.kotlinacademy.data.FirebaseTokenType
+import org.kotlinacademy.backend.repositories.db.Database.toValueName
+import org.kotlinacademy.data.*
 import org.kotlinacademy.data.FirebaseTokenType.Android
 import org.kotlinacademy.data.FirebaseTokenType.Web
-import org.kotlinacademy.data.News
 import org.kotlinacademy.parseDate
+import java.util.*
 
 object Database : DatabaseRepository {
-    private val app = application ?: throw Error("DatabaseRepository must be overriten for unit tests")
+
+    private val app = application
+            ?: throw Error("DatabaseRepository must be overriten for unit tests")
+    private val rand = Random()
 
     private val config = app.environment.config.config("database")
     private val poolSize = config.property("poolSize").getString().toInt()
@@ -40,7 +40,7 @@ object Database : DatabaseRepository {
 
     init {
         connection.transaction {
-            databaseSchema().create(listOf(NewsTable, FeedbackTable, TokensTable))
+            databaseSchema().create(listOf(NewsTable, FeedbackTable, TokensTable, SubscriptionsTable))
         }
     }
 
@@ -148,6 +148,36 @@ object Database : DatabaseRepository {
                 it[type] = tokenType.toValueName()
                 it[token] = tokenText
             }.execute()
+        }
+    }
+
+    override suspend fun getEmailSubscriptions(): List<Subscription> = run(dispatcher) {
+        connection.transaction {
+            SubscriptionsTable.select(SubscriptionsTable.email, SubscriptionsTable.key, SubscriptionsTable.creationTime)
+                    .execute()
+                    .map { Subscription(it[SubscriptionsTable.email], it[SubscriptionsTable.key], it[SubscriptionsTable.creationTime].parseDate()) }
+                    .toList()
+        }
+    }
+
+    override suspend fun addEmailSubscription(newEmail: String): Subscription = run(dispatcher) {
+        connection.transaction {
+            val randomKey = rand.nextLong().toString()
+            val currentTime = DateTime(Date())
+            insertInto(SubscriptionsTable).values {
+                it[email] = newEmail
+                it[key] = randomKey
+                it[creationTime] = currentTime.toDateFormatString()
+            }.execute()
+            Subscription(newEmail, randomKey, currentTime)
+        }
+    }
+
+    override suspend fun removeEmailSubscription(key: String) {
+        run(dispatcher) {
+            connection.transaction {
+                deleteFrom(SubscriptionsTable).where { SubscriptionsTable.key.eq(key) }
+            }
         }
     }
 

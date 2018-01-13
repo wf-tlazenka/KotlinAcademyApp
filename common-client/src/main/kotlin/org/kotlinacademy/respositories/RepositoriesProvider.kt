@@ -4,4 +4,5 @@ expect object RepositoriesProvider {
     fun getNewsRepository(): NewsRepository
     fun getFeedbackRepository(): FeedbackRepository
     fun getNotificationRepository(): NotificationRepository
+    fun getSubscriptionRepository(): SubscriptionRepository
 }

@@ -14,6 +14,7 @@ local.properties
 /backend/static/*
 keystore.jks
 android/mobile/release/*
+bRun.sh
 
 .DS_Store
 .externalNativeBuild

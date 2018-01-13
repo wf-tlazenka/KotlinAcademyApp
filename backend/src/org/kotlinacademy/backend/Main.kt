@@ -16,6 +16,9 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.util.error
+import org.kotlinacademy.backend.errors.MissingParameterError
+import org.kotlinacademy.backend.errors.MissingElementError
+import org.kotlinacademy.backend.errors.SecretInvalidError
 import org.kotlinacademy.gson
 
 fun Application.main() {
@@ -27,6 +30,16 @@ fun Application.main() {
         exception<Throwable> { cause ->
             environment.log.error(cause)
             call.respond(HttpStatusCode.NotImplemented)
+        }
+        exception<MissingParameterError> { cause ->
+            call.respond(HttpStatusCode.BadRequest, "Missing parameter ${cause.name}")
+        }
+        exception<MissingElementError> { cause ->
+            environment.log.error(cause)
+            call.respond(HttpStatusCode.InternalServerError, "Cannot process your request because of missing ${cause.name}")
+        }
+        exception<SecretInvalidError> {
+            call.respond(HttpStatusCode.BadRequest, "This endpoint is protected and your secret is invalid")
         }
     }
 

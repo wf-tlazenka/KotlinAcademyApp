@@ -5,9 +5,13 @@ import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.pipeline.PipelineContext
 import io.ktor.request.receiveOrNull
+import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.*
 import org.kotlinacademy.Endpoints
+import org.kotlinacademy.backend.errors.MissingParameterError
+import org.kotlinacademy.backend.errors.MissingElementError
+import org.kotlinacademy.backend.errors.SecretInvalidError
 import org.kotlinacademy.backend.repositories.db.DatabaseRepository
 import org.kotlinacademy.backend.repositories.email.EmailRepository
 import org.kotlinacademy.backend.repositories.network.NotificationsRepository
@@ -25,7 +29,7 @@ fun Routing.api() {
             call.respond(NewsData(newsList))
         }
         put {
-            requireSecret() ?: return@put
+            requireSecret()
             val news = receiveObject<News>() ?: return@put
             addOrUpdateNews(news, databaseRepository, notificationRepository, emailRepository)
             call.respond(HttpStatusCode.OK)
@@ -33,7 +37,7 @@ fun Routing.api() {
     }
     route(Endpoints.feedback) {
         get {
-            requireSecret() ?: return@get
+            requireSecret()
             val newsList = getAllFeedback(databaseRepository)
             call.respond(FeedbackData(newsList))
         }
@@ -46,7 +50,7 @@ fun Routing.api() {
     route(Endpoints.notification) {
         route(Endpoints.notificationRegister) {
             get {
-                requireSecret() ?: return@get
+                requireSecret()
                 val tokens = getTokenData(databaseRepository)
                 call.respond(tokens)
             }
@@ -58,7 +62,7 @@ fun Routing.api() {
         }
         route(Endpoints.notificationSend) {
             post {
-                requireSecret() ?: return@post
+                requireSecret()
                 val text = receiveObject<String>() ?: return@post
                 if (notificationRepository == null) {
                     call.respond(HttpStatusCode.ServiceUnavailable, "No notification repository!")
@@ -70,14 +74,38 @@ fun Routing.api() {
             }
         }
     }
+    route(Endpoints.subscription) {
+        post {
+            val email = getParam("email")
+            val emailRepository = emailRepository ?: throw MissingElementError("EmailRepository")
+            addSubscription(email, databaseRepository, emailRepository)
+            call.respond(HttpStatusCode.OK)
+        }
+        delete {
+            val key = getParam("key")
+            removeSubscription(key, databaseRepository)
+            call.respond(HttpStatusCode.OK)
+        }
+    }
+    route(Endpoints.sendMailing) {
+        post {
+            requireSecret()
+            val title = getParam("title")
+            val message = getParam("message")
+            val emailRepository = emailRepository ?: throw MissingElementError("EmailRepository")
+            sendMailing(title, message, emailRepository, databaseRepository)
+        }
+    }
 }
 
-private suspend fun PipelineContext<*, ApplicationCall>.requireSecret(): Unit? {
+private suspend fun PipelineContext<*, ApplicationCall>.getParam(name: String): String {
+    return call.receiveParameters().get(name) ?: throw MissingParameterError(name)
+}
+
+private suspend fun PipelineContext<*, ApplicationCall>.requireSecret() {
     if (call.request.headers["Secret-hash"] != Config.secretHash) {
-        call.respond("You need to provide hash of admin secret for this reqeust")
-        return null
+        throw SecretInvalidError()
     }
-    return Unit
 }
 
 private suspend inline fun <reified T : Any> PipelineContext<Unit, ApplicationCall>.receiveObject(): T? {

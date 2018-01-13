@@ -1,7 +1,7 @@
 allprojects {
     buildscript {
         ext.kotlin_version = '1.2.0'
-        ext.serialization_version = '0.3'
+        ext.serialization_version = '0.4'
 
         repositories {
             maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
@@ -20,6 +20,7 @@ allprojects {
     repositories {
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
         maven { url "https://kotlin.bintray.com/kotlinx" }
+        maven { url "https://kotlin.bintray.com/kotlin-js-wrappers" }
         maven { url 'https://maven.google.com' }
         maven { url 'https://jitpack.io' }
         jcenter()
