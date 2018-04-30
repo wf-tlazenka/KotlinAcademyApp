@@ -7,12 +7,6 @@ web:
   volumes:
    - .:/app
    - ./web/build.gradle.docker:/app/web/build.gradle
-  volumes_from:
-   - gradle
   stdin_open: true
   command: ./gradlew :web:run :backend:run
   
-gradle:
-  image: centos
-  volumes:
-   - ~/.gradle:/root/.gradle:rw

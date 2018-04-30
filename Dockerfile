@@ -10,6 +10,6 @@ RUN mkdir -p $APP_HOME
 ADD . $APP_HOME
 WORKDIR $APP_HOME
 
-RUN npm install webpack@1.12.11 -g
+RUN npm install webpack -g
 
 EXPOSE 8080 8088
